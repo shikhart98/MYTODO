@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:textColor="#263238"
+        android:id="@+id/tv"
+        android:layout_marginLeft="20dp"
+        android:layout_weight="1"/>
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/cb"
+        android:layout_marginLeft="15dp"
+        android:layout_weight="1"
+        android:layout_marginRight="15dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:textSize="20sp"
+        android:text="X"
+        android:layout_weight="1"
+        style="?android:attr/borderlessButtonStyle"
+        android:textColor="#ff0000"
+        android:id="@+id/btn"/>
+
+</LinearLayout>

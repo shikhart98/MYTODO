@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MYTODO</string>
+    <string name="addtask">+</string>
+    <string name="see_file_here">See File Here</string>
+</resources>
