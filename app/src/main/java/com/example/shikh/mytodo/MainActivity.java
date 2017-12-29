@@ -26,8 +26,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,14 +40,14 @@ public class MainActivity extends AppCompatActivity {
     customAdapter adapter;
     EditText et_main;
     File data;
+    File space;
     Button btn_readFile;
     ListView lv_main;
     Button btn_main;
     PermissionManager pm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         taskList = new ArrayList<>();
@@ -53,8 +56,9 @@ public class MainActivity extends AppCompatActivity {
         lv_main = findViewById(R.id.lv_main);
         btn_readFile = findViewById(R.id.btn_readFile);
         pm = new PermissionManager(this);
-        File space = Environment.getExternalStorageDirectory();
-        data = new File(space,"data.txt");
+        space = Environment.getExternalStorageDirectory();
+        data = new File(space, "data.txt");
+        refresh();
         btn_readFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,8 +68,8 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onGranted(String permission) {
                                 String str = readList();
-                                Intent i = new Intent(MainActivity.this,IntentActivity.class);
-                                i.putExtra("str",str);
+                                Intent i = new Intent(MainActivity.this, IntentActivity.class);
+                                i.putExtra("str", str);
                                 startActivity(i);
                             }
 
@@ -100,19 +104,36 @@ public class MainActivity extends AppCompatActivity {
         lv_main.setAdapter(adapter);
     }
 
-    String readList(){
-        try{
+    void refresh() {
+        try {
+            Log.d(tag, "refresh: ");
             FileInputStream fin = new FileInputStream(data);
-            BufferedReader br = new BufferedReader( new InputStreamReader(fin));
-            StringBuilder sb = new StringBuilder("");
+            BufferedReader br = new BufferedReader(new InputStreamReader(fin));
             String buf = br.readLine();
             while(buf!=null){
+                    task t = new task(buf, false);
+                    taskList.add(t);
+                    adapter.notifyDataSetChanged();
+                    buf = br.readLine();
+            }
+        }catch (IOException e){
+            Log.e(tag, "refresh: ",e);
+        }
+    }
+
+    String readList() {
+        try {
+            FileInputStream fin = new FileInputStream(data);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fin));
+            StringBuilder sb = new StringBuilder("");
+            String buf = br.readLine();
+            while (buf != null) {
                 sb.append(buf);
                 sb.append("\n");
                 buf = br.readLine();
             }
             return sb.toString();
-        } catch(IOException e){
+        } catch (IOException e) {
             Log.e(tag, "Could not read list", e);
             return "";
         }
@@ -120,14 +141,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        pm.onRequestPermissionResult(requestCode,permissions,grantResults);
+        pm.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
 
-    void addtask(){
+    void addtask() {
         try {
-            FileOutputStream fout = new FileOutputStream(data , true);
+            FileOutputStream fout = new FileOutputStream(data, true);
             String str = et_main.getText().toString();
-            fout.write((str+"\n").getBytes());
+            fout.write((str + "\n").getBytes());
             if (!str.equals("")) {
                 task t = new task(str, false);
                 taskList.add(t);
@@ -136,14 +157,32 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(MainActivity.this, "Nothing to add!", Toast.LENGTH_SHORT).show();
             }
-        } catch (IOException e ){
-            Log.e(tag, "Could not write into file ----> data.txt",e);
+        } catch (IOException e) {
+            Log.e(tag, "Could not write into file ----> data.txt", e);
         }
     }
 
-    void deletefromfile(int i){
-        String str = taskList.get(i).getName();
-
+    void deletefromfile(int i) {
+        try {
+            File tempFile = new File(space, "tempFile.txt");
+            String str = taskList.get(i).getName();
+            BufferedReader br = new BufferedReader(new FileReader(data));
+            PrintWriter pw = new PrintWriter(new FileWriter(tempFile));
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (!line.trim().equals(str)) {
+                    pw.println(line);
+                    pw.flush();
+                }
+            }
+            pw.close();
+            br.close();
+            data.delete();
+            tempFile.renameTo(data);
+        } catch (IOException ex) {
+            Log.e(tag, "Exception", ex);
+        }
+        readList();
     }
 
     public class customAdapter extends BaseAdapter {
@@ -164,8 +203,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(final int i, View view, ViewGroup viewGroup) {
-            Log.d(tag, "getView: "+i+viewGroup);
-            if(view == null) {
+            Log.d(tag, "getView: " + i + viewGroup);
+            if (view == null) {
                 LayoutInflater li = getLayoutInflater();
                 view = li.inflate(R.layout.list_item_detailed_view, viewGroup, false);
             }
@@ -179,29 +218,29 @@ public class MainActivity extends AppCompatActivity {
 
             btn.setOnClickListener(new View.OnClickListener() {
                 @Override
-                    public void onClick(View view) {
-                    if(thistask.isDone()) {
-                        taskList.remove(i);
+                public void onClick(View view) {
+                    if (thistask.isDone()) {
                         deletefromfile(i);
+                        taskList.remove(i);
                         taskList.trimToSize();
                         notifyDataSetChanged();
-                        Toast.makeText(MainActivity.this,"Deleted!",
+                        Toast.makeText(MainActivity.this, "Deleted!",
                                 Toast.LENGTH_SHORT).show();
-                    }else{
+                    } else {
                         thistask.setDone(true);
                         Toast.makeText(MainActivity.this,
-                                "You're not done!\nPress again to delete.",Toast.LENGTH_SHORT).show();
-                        }
+                                "You're not done!\nPress again to delete.", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+            });
 
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    if(cb.isChecked()){
+                    if (cb.isChecked()) {
                         thistask.setDone(true);
-                        Toast.makeText(MainActivity.this,"Congo! You're Done!",Toast.LENGTH_SHORT).show();
-                    }else{
+                        Toast.makeText(MainActivity.this, "Congo! You're Done!", Toast.LENGTH_SHORT).show();
+                    } else {
                         thistask.setDone(false);
                     }
                 }
