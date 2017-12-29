@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import com.example.shikh.mytodo.MainActivity;
 
@@ -16,12 +17,13 @@ import java.util.ArrayList;
 public class PermissionManager {
     Activity activity;
     ArrayList<OnPermissionResult> permissionHandler = new ArrayList<>();
-
+    public static final String  TAG = "PM";
     public PermissionManager(Activity activity) {
         this.activity = activity;
     }
 
     public void doWithPermission(String[] permissions , OnPermissionResult opr){
+        Log.d(TAG, "Entered into dowithpermission tag");
         int deniedPermissions = 0;
         for(String permission : permissions){
             int perm = ContextCompat.checkSelfPermission(activity , permission);

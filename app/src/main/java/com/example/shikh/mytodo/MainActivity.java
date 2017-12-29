@@ -52,13 +52,14 @@ public class MainActivity extends AppCompatActivity {
         btn_main = findViewById(R.id.btn_main);
         lv_main = findViewById(R.id.lv_main);
         btn_readFile = findViewById(R.id.btn_readFile);
-
+        pm = new PermissionManager(this);
         File space = Environment.getExternalStorageDirectory();
         data = new File(space,"data.txt");
         btn_readFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pm.doWithPermission(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                Log.d(tag, "button readfile clicked");
+                pm.doWithPermission(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         new PermissionManager.OnPermissionResult() {
                             @Override
                             public void onGranted(String permission) {
@@ -78,11 +79,14 @@ public class MainActivity extends AppCompatActivity {
         btn_main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d(tag, "btn to add file clicked");
                 pm.doWithPermission(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         new PermissionManager.OnPermissionResult() {
                             @Override
                             public void onGranted(String permission) {
+                                Log.d(tag, "entered onGranted");
                                 addtask();
+                                adapter.notifyDataSetChanged();
                             }
 
                             @Override
@@ -129,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
                 taskList.add(t);
                 et_main.setText("");
                 Toast.makeText(MainActivity.this, "Task Added!", Toast.LENGTH_SHORT).show();
-                adapter.notifyDataSetChanged();
             } else {
                 Toast.makeText(MainActivity.this, "Nothing to add!", Toast.LENGTH_SHORT).show();
             }
@@ -139,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void deletefromfile(int i){
-//    take string from arraylist of task -----> tasklist
+        String str = taskList.get(i).getName();
 
     }
 
